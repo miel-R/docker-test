@@ -1,13 +1,26 @@
-FROM node:20-alpine
+FROM alpine:3.24
 
-WORKDIR /app
+RUN apk add --no-cache \
+    nats-server \
+    bash \
+    openssl \
+    supervisor \
+    bind-tools \
+    netcat-openbsd \
+    ca-certificates
 
-COPY package*.json ./
+# Install Janus Gateway (pre-built for Alpine)
+RUN apk add --no-cache janus-gateway \
+    && janus --version
 
-RUN npm install
+COPY start.sh /start.sh
+COPY supervisord.conf /etc/supervisord.conf
+COPY healthcheck.sh /healthcheck.sh
 
-COPY . .
+RUN chmod +x /start.sh /healthcheck.sh
 
-EXPOSE 3000
+EXPOSE 8080 8081 8443 3478
 
-CMD ["node", "index.js"]
+HEALTHCHECK CMD /healthcheck.sh
+
+CMD ["/start.sh"]
