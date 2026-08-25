@@ -18,9 +18,6 @@ ENV INTERNAL_SECRET=internaltest
 # Port mappings (AIO default ports)
 EXPOSE 80 8080 8443 443
 
-# Copy custom startup script (optional, for debugging)
-COPY start.sh /start.sh
-
 # Health check - give AIO time to initialize (it can take a few minutes)
 # Port 8080 is the AIO interface port
 HEALTHCHECK --interval=120s --timeout=30s --start-period=60s --retries=2 \
