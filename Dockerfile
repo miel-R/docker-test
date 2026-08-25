@@ -1,26 +1,26 @@
-FROM alpine:3.24
+FROM ghcr.io/nextcloud-releases/all-in-one:latest
 
-RUN apk add --no-cache \
-    nats-server \
-    bash \
-    openssl \
-    supervisor \
-    bind-tools \
-    netcat-openbsd \
-    ca-certificates
+# Enable Talk container (optional - included in AIO)
+# Set environment variables to configure the AIO instance
 
-# Install Janus Gateway (pre-built for Alpine)
-RUN apk add --no-cache janus-gateway \
-    && janus --version
+# Domain configuration - required for HTTPS/TLS
+ENV NEXTCLOUD_DOMAIN=localhost
+ENV NEXTCLOUD_ADMIN_USER=admin
+ENV NEXTCLOUD_ADMIN_PASSWORD=admin123
 
-COPY start.sh /start.sh
-COPY supervisord.conf /etc/supervisord.conf
-COPY healthcheck.sh /healthcheck.sh
+# Talk configuration
+ENV TALK_ENABLED=true
+ENV TALK_PORT=3478
+ENV TURN_SECRET=turn12345
+ENV SIGNALING_SECRET=signal12345
+ENV INTERNAL_SECRET=internal12345
 
-RUN chmod +x /start.sh /healthcheck.sh
+# Port mappings (AIO default ports)
+EXPOSE 80 8080 8443 443
 
-EXPOSE 8080 8081 8443 3478
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/index.php/apps/status/ || exit 1
 
-HEALTHCHECK CMD /healthcheck.sh
-
-CMD ["/start.sh"]
+# Start AIO (handled by entrypoint of base image)
+CMD ["--foreground"]
