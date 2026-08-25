@@ -1,28 +1,13 @@
-FROM ghcr.io/nextcloud-releases/all-in-one:latest
+FROM node:20-alpine
 
-# Enable Talk container (optional - included in AIO)
-# Set environment variables to configure the AIO instance
+WORKDIR /app
 
-# Domain configuration - for local testing use localhost
-ENV NEXTCLOUD_DOMAIN=localhost
-ENV NEXTCLOUD_ADMIN_USER=admin
-ENV NEXTCLOUD_ADMIN_PASSWORD=admin
+COPY package*.json ./
 
-# Talk configuration
-ENV TALK_ENABLED=true
-ENV TALK_PORT=3478
-ENV TURN_SECRET=turntest
-ENV SIGNALING_SECRET=signaltest
-ENV INTERNAL_SECRET=internaltest
+RUN npm install --production
 
-# Port mappings (AIO default ports)
-EXPOSE 80 8080 8443 443
+COPY . .
 
-# Health check - give AIO time to initialize (it can take a few minutes)
-# Port 8080 is the AIO interface port
-HEALTHCHECK --interval=120s --timeout=30s --start-period=60s --retries=2 \
-    CMD curl -f http://localhost:8080/index.php/apps/status/ || exit 1
+EXPOSE 3000
 
-# No CMD - let base image handle startup with its ENTRYPOINT
-# Environment variables will be used by the base image's startup scripts
-# The extended start-period gives services time to initialize
+CMD ["node", "index.js"]
