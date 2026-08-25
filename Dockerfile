@@ -18,8 +18,8 @@ ENV INTERNAL_SECRET=internaltest
 # Port mappings (AIO default ports)
 EXPOSE 80 8080 8443 443
 
-# Health check - skip for local testing, AIO handles its own health
+# Health check - skip to avoid conflict with base image
 HEALTHCHECK NONE
 
-# Start AIO (handled by entrypoint of base image)
-CMD ["--foreground"]
+# No CMD - let base image handle startup with its ENTRYPOINT
+# Environment variables will be used by the base image's startup scripts
